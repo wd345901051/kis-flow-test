@@ -1,6 +1,7 @@
 package kis
 
 import (
+	"context"
 	"kis-flow/config"
 )
 
@@ -9,17 +10,17 @@ import (
 //	任意个KisFunction可以组合成一个KisFlow
 type Function interface {
 	// Call 执行流式计算逻辑
-	// Call(ctx context.Context, flow Flow) error
+	Call(ctx context.Context, flow Flow) error
 
 	// SetConfig 给当前Function实例配置策略
 	SetConfig(s *config.KisFuncConfig) error
 	// GetConfig 获取当前Function实例配置策略
 	GetConfig() *config.KisFuncConfig
 
-	// // SetFlow 给当前Function实例设置所依赖的Flow实例
-	// SetFlow(f Flow) error
-	// // GetFlow 获取当前Functioin实力所依赖的Flow
-	// GerFlow() Flow
+	// SetFlow 给当前Function实例设置所依赖的Flow实例
+	SetFlow(f Flow) error
+	// GetFlow 获取当前Functioin实力所依赖的Flow
+	GerFlow() Flow
 
 	// CreateId 给当前Funciton实力生成一个随机的实例KisID
 	CreatedId()
