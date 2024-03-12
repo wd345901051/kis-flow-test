@@ -2,8 +2,10 @@ package flow
 
 import (
 	"context"
+	"errors"
 	"kis-flow/common"
 	"kis-flow/config"
+	"kis-flow/function"
 	"kis-flow/id"
 	"kis-flow/kis"
 	"kis-flow/log"
@@ -51,6 +53,7 @@ func NewKisFlow(conf *config.KisFlowConfig) kis.Flow {
 
 	// ++++++++ 数据data +++++++
 	flow.data = make(common.KisDataMap)
+	flow.Conf = conf
 
 	return flow
 }
@@ -114,7 +117,73 @@ func (flow *KisFlow) Run(ctx context.Context) error {
 	return nil
 }
 
-// Link 将Flow中的Function按照配置文件中的配置进行连接
+// Link 将Function链接到Flow中
+// fConf: 当前Function策略
+// fParams: 当前Flow携带的Function动态参数
 func (flow *KisFlow) Link(fConf *config.KisFuncConfig, fParam config.FParam) error {
+
+	// 创建Function实例
+	f := function.NewKisFunction(flow, fConf)
+
+	// Flow 添加 Function
+	if err := flow.appendFunc(f, fParam); err != nil {
+		return err
+	}
+
 	return nil
+}
+
+func (flow *KisFlow) appendFunc(function kis.Function, fParam config.FParam) error {
+	if function == nil {
+		return errors.New("AppendFunc append nil to List")
+	}
+	flow.flock.Lock()
+	defer flow.flock.Unlock()
+	if flow.FloowHead == nil {
+		// 首次添加节点
+		flow.FloowHead = function
+		flow.FloowTail = function
+
+		function.SetN(nil)
+		function.SetP(nil)
+	} else {
+		// 将function添加到链表的尾部
+		function.SetP(flow.FloowTail)
+		function.SetN(nil)
+
+		flow.FloowTail.SetN(function)
+		flow.FloowTail = function
+	}
+	// 将Function Name 详细Hash对应关系添加到flow对象中
+	flow.Funcs[function.GetConfig().FName] = function
+
+	// 先添加function 默认携带的Params参数
+	params := make(config.FParam)
+
+	for key, value := range function.GetConfig().Option.Params {
+		params[key] = value
+	}
+
+	// 再添加flow携带的function定义参数(重复即覆盖)
+	for key, value := range fParam {
+		params[key] = value
+	}
+
+	// 将得到的FParams存留在flow结构体中，用来function业务直接通过Hash获取
+	// key 为当前Function的KisId，不用Fid的原因是为了防止一个Flow添加两个相同策略Id的Function
+	flow.funcParams[function.GetId()] = params
+
+	return nil
+}
+
+func (flow *KisFlow) GetName() string {
+	return flow.Name
+}
+
+func (flow *KisFlow) GetThisFunction() kis.Function {
+	return flow.ThisFunction
+}
+
+func (flow *KisFlow) GetThisFuncConf() *config.KisFuncConfig {
+	return flow.ThisFunction.GetConfig()
 }
