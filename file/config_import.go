@@ -73,7 +73,7 @@ func parseConfigWalkYaml(loadPath string) (*allConfig, error) {
 	all.Funcs = make(map[string]*config.KisFuncConfig)
 	all.Conns = make(map[string]*config.KisConnConfig)
 	err := filepath.Walk(loadPath, func(filePath string, info os.FileInfo, err error) error {
-		if suffix := path.Ext(filePath); suffix != ".yml" || suffix != ".yaml" {
+		if suffix := path.Ext(filePath); suffix != ".yml" && suffix != ".yaml" {
 			return nil
 		}
 		confData, err := ioutil.ReadFile(filePath)

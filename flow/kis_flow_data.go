@@ -46,6 +46,7 @@ func (flow *KisFlow) clearData() {
 func (flow *KisFlow) commitCurData(ctx context.Context) error {
 	//判断本层计算是否有结果数据,如果没有则退出本次Flow Run循环
 	if len(flow.buffer) == 0 {
+		flow.abort = true
 		return nil
 	}
 
@@ -75,7 +76,7 @@ func (flow *KisFlow) getCurData() (common.KisRowArr, error) {
 		return nil, fmt.Errorf("[%s] is not in flow.data", flow.PrevFunctionId)
 	}
 
-	return flow.data[flow.ThisFunctionId], nil
+	return flow.data[flow.PrevFunctionId], nil
 }
 
 // Input 得到flow当前执行Function的输入源数据
