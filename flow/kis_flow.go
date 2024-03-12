@@ -20,7 +20,7 @@ type KisFlow struct {
 	Conf *config.KisFlowConfig // Flow配置策略
 
 	// Function列表
-	Funcs          map[string]kis.Function // 当前flow拥有的全部管理的全部Function对象, key: FunctionID
+	Funcs          map[string]kis.Function // 当前flow拥有的全部管理的全部Function对象, key: FunctionName
 	FloowHead      kis.Function            // 当前Flow所拥有的Function列表表头
 	FloowTail      kis.Function            // 当前Flow所拥有的Function列表表尾
 	flock          sync.RWMutex            // 管理链表插入读写的锁
@@ -222,4 +222,16 @@ func (flow *KisFlow) GetConnConf() (*config.KisConnConfig, error) {
 		return conn.GetConfig(), nil
 	}
 	return nil, errors.New("GetConnConf(): Connector is nil")
+}
+
+func (flow *KisFlow) GetConfig() *config.KisFlowConfig {
+	return flow.Conf
+}
+
+func (flow *KisFlow) GetFuncConfigByName(fName string) *config.KisFuncConfig {
+	if f, ok := flow.Funcs[fName]; ok {
+		return f.GetConfig()
+	}
+	log.Logger().ErrorF("GetFuncConfigByName(): Function %s not found", fName)
+	return nil
 }

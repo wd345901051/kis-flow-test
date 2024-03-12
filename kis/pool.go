@@ -72,7 +72,7 @@ func (pool *kisPool) GetFlow(name string) Flow {
 }
 
 // FaaS 注册 Function 计算业务逻辑, 通过Function Name 索引及注册
-func (pool *kisPool) Faas(fnName string, f Faas) {
+func (pool *kisPool) FaaS(fnName string, f Faas) {
 	pool.fnLock.Lock()
 	defer pool.fnLock.Unlock()
 
@@ -123,7 +123,7 @@ func (pool *kisPool) CallConnInit(conn Connector) error {
 }
 
 // CaaS 注册Connector Call业务
-func (pool *kisPool) Caas(cname string, fname string, mode common.KisMode, c CaaS) {
+func (pool *kisPool) CaaS(cname string, fname string, mode common.KisMode, c CaaS) {
 	pool.cLock.Lock()
 	defer pool.cLock.Unlock()
 	if _, ok := pool.cTree[cname]; !ok {
@@ -155,4 +155,15 @@ func (pool *kisPool) CallConnector(ctx context.Context, flow Flow, conn Connecto
 	log.Logger().ErrorFX(ctx, "CName:%s FName:%s mode:%s Can not find in KisPool, Not Added.\n", conn.GetName(), fnConf.FName, mode)
 
 	return errors.New(fmt.Sprintf("CName:%s FName:%s mode:%s Can not find in KisPool, Not Added.", conn.GetName(), fnConf.FName, mode))
+}
+
+func (pool *kisPool) GetFlows() []Flow {
+	pool.flowLock.RLock()
+	defer pool.flowLock.RUnlock()
+
+	flows := make([]Flow, len(pool.flowRoutert))
+	for _, flow := range pool.flowRoutert {
+		flows = append(flows, flow)
+	}
+	return flows
 }

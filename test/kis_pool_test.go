@@ -39,8 +39,8 @@ func funcName2Handler(ctx context.Context, flow kis.Flow) error {
 func TestNewKisPool(t *testing.T) {
 	ctx := context.Background()
 
-	kis.Pool().Faas("funcName1", funcName1Handler)
-	kis.Pool().Faas("funcName2", funcName2Handler)
+	kis.Pool().FaaS("funcName1", funcName1Handler)
+	kis.Pool().FaaS("funcName2", funcName2Handler)
 
 	// 1. 创建2个KisFunction配置实例
 	source1 := config.KisSource{
