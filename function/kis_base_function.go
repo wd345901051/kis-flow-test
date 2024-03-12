@@ -17,6 +17,8 @@ type BaseFunction struct {
 	// flow
 	Flow kis.Flow //上下文环境KisFlow
 
+	connector kis.Connector
+
 	// link
 	N kis.Function //下一个流计算Function
 	P kis.Function //上一个流计算Function
@@ -124,4 +126,19 @@ func NewKisFunction(flow kis.Flow, config *config.KisFuncConfig) kis.Function {
 	}
 
 	return f
+}
+
+// AddConnector 给当前Function实例添加一个Connector
+func (base *BaseFunction) AddConnector(conn kis.Connector) error {
+	if conn == nil {
+		return errors.New("connector is nil")
+	}
+
+	base.connector = conn
+	return nil
+}
+
+// GetConnector 获取当前Function实例所关联的Connector
+func (base *BaseFunction) GetConnector() kis.Connector {
+	return base.connector
 }
