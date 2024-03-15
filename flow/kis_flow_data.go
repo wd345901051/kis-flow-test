@@ -83,3 +83,15 @@ func (flow *KisFlow) getCurData() (common.KisRowArr, error) {
 func (flow *KisFlow) Input() common.KisRowArr {
 	return flow.inPut
 }
+
+func (flow *KisFlow) commitVoidData(ctx context.Context) error {
+	if len(flow.buffer) != 0 {
+		return nil
+	}
+	batch := make(common.KisRowArr, 0)
+
+	flow.data[flow.ThisFunctionId] = batch
+
+	log.Logger().DebugFX(ctx, " ====> After commitVoidData, flow_name = %s, flow_id = %s\nAll Level Data =\n %+v\n", flow.Name, flow.Id, flow.data)
+	return nil
+}
