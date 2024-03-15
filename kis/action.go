@@ -11,6 +11,9 @@ type Action struct {
 	// 默认Next()为如果本层Function计算结果为0条数据，之后Function将不会继续执行
 	// ForceEntryNext 为忽略上述默认规则，没有数据强制进入下一层Function
 	ForceEntryNext bool
+
+	// JumpFunc 跳转到指定Function继续执行
+	JumpFunc string
 }
 
 // ActionFunc KisFlow Functional Option 类型
@@ -42,4 +45,10 @@ func ActionDataReuse(action *Action) {
 
 func ActionForceEntryNext(action *Action) {
 	action.ForceEntryNext = true
+}
+
+func ActionJumpFunc(funcName string) ActionFunc {
+	return func(action *Action) {
+		action.JumpFunc = funcName
+	}
 }

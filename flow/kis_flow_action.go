@@ -2,6 +2,8 @@ package flow
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"kis-flow/kis"
 	"kis-flow/log"
 )
@@ -25,9 +27,24 @@ func (flow *KisFlow) dealAction(ctx context.Context, fn kis.Function) (kis.Funct
 		flow.action.Abort = false
 	}
 
-	// 更新上一层 FuncitonId 游标
-	flow.PrevFunctionId = flow.ThisFunctionId
-	fn = fn.Next()
+	if flow.action.JumpFunc != "" {
+		if _, ok := flow.Funcs[flow.action.JumpFunc]; !ok {
+			//当前JumpFunc不在flow中
+			return nil, errors.New(fmt.Sprintf("Flow Jump -> %s is not in Flow", flow.action.JumpFunc))
+		}
+		jumpFunction := flow.Funcs[flow.action.JumpFunc]
+
+		flow.PrevFunctionId = jumpFunction.GetId()
+		fn = jumpFunction
+
+		// 如果设置跳跃，强制跳跃
+		flow.abort = false
+
+	} else {
+		// 更新上一层 FuncitonId 游标
+		flow.PrevFunctionId = flow.ThisFunctionId
+		fn = fn.Next()
+	}
 
 	if flow.action.Abort {
 		flow.abort = true
