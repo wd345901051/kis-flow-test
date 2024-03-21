@@ -11,6 +11,9 @@ import (
 	"kis-flow/kis"
 	"kis-flow/log"
 	"sync"
+	"time"
+
+	"github.com/patrickmn/go-cache"
 )
 
 // KisFlow 用于贯穿整条流式计算的上下文环境
@@ -41,6 +44,12 @@ type KisFlow struct {
 	action kis.Action // 当前Flow所携带的Action动作
 
 	abort bool // 是否中断Flow
+
+	// flow的本地缓存
+	cache *cache.Cache // Flow流的临时缓存上线文环境
+
+	metaData map[string]interface{} // Flow的自定义临时数据
+	mLock    sync.RWMutex           // 管理metaData的读写锁
 }
 
 // TODO for test
@@ -60,6 +69,11 @@ func NewKisFlow(conf *config.KisFlowConfig) kis.Flow {
 	// ++++++++ 数据data +++++++
 	flow.data = make(common.KisDataMap)
 	flow.Conf = conf
+
+	// 初始化本地缓存
+	flow.cache = cache.New(cache.NoExpiration, common.DeFaultFlowCacheCleanUp*time.Minute)
+
+	flow.metaData = make(map[string]interface{})
 
 	return flow
 }

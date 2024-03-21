@@ -4,7 +4,11 @@ import (
 	"context"
 	"fmt"
 	"kis-flow/common"
+	"kis-flow/config"
 	"kis-flow/log"
+	"time"
+
+	"github.com/patrickmn/go-cache"
 )
 
 func (flow *KisFlow) CommitRow(row interface{}) error {
@@ -94,4 +98,64 @@ func (flow *KisFlow) commitVoidData(ctx context.Context) error {
 
 	log.Logger().DebugFX(ctx, " ====> After commitVoidData, flow_name = %s, flow_id = %s\nAll Level Data =\n %+v\n", flow.Name, flow.Id, flow.data)
 	return nil
+}
+
+func (flow *KisFlow) GetCacheData(key string) interface{} {
+	if data, found := flow.cache.Get(key); found {
+		return data
+	}
+	return nil
+}
+
+func (flow *KisFlow) SetCacheData(key string, value interface{}, Exp time.Duration) {
+	if Exp == common.DefaultExpiration {
+		flow.cache.Set(key, value, cache.DefaultExpiration)
+	} else {
+		flow.cache.Set(key, value, Exp)
+	}
+}
+
+// GetMetaData 得到当前Flow对象的临时数据
+func (flow *KisFlow) GetMetaData(key string) interface{} {
+	flow.mLock.RLock()
+	defer flow.mLock.RUnlock()
+	if value, ok := flow.metaData[key]; ok {
+		return value
+	}
+	return nil
+}
+
+// SetMetaData 设置当前Flow对象的临时数据
+func (flow *KisFlow) SetMetaData(key string, value interface{}) {
+	flow.mLock.Lock()
+	defer flow.mLock.Unlock()
+
+	flow.metaData[key] = value
+}
+
+// GetFuncParam 得到Flow的当前正在执行的Function的配置默认参数，取出一对key-value
+func (flow *KisFlow) GetFuncParam(key string) string {
+	flow.fplock.RLock()
+	defer flow.fplock.RUnlock()
+
+	if param, ok := flow.funcParams[flow.ThisFunctionId]; ok {
+		if value, vok := param[key]; vok {
+			return value
+		}
+	}
+
+	return ""
+}
+
+// GetFuncParamAll 得到Flow的当前正在执行的Function的配置默认参数，取出全部Key-Value
+func (flow *KisFlow) GetFuncParamAll() config.FParam {
+	flow.fplock.RLock()
+	defer flow.fplock.RUnlock()
+
+	param, ok := flow.funcParams[flow.ThisFunctionId]
+	if !ok {
+		return nil
+	}
+
+	return param
 }

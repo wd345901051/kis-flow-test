@@ -1,5 +1,7 @@
 package common
 
+import "time"
+
 type KisMode string
 
 type KisOnOff int
@@ -49,4 +51,12 @@ const (
 	FunctionIdFirstVirtual = "FunctionIdFirstVirtual"
 	// FunctionIdLastVirtual 为尾结点Function下一层虚拟的Function ID
 	FunctionIdLastVirtual = "FunctionIdLastVirtual"
+)
+
+// cache
+const (
+	// DeFaultFlowCacheCleanUp KisFlow中Flow对象Cache缓存默认的清理内存时间
+	DeFaultFlowCacheCleanUp = 5 //单位 min
+	// DefaultExpiration 默认GoCahce时间 ，永久保存
+	DefaultExpiration time.Duration = 0
 )
