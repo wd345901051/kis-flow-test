@@ -60,3 +60,8 @@ const (
 	// DefaultExpiration 默认GoCahce时间 ，永久保存
 	DefaultExpiration time.Duration = 0
 )
+
+// metrics
+const (
+	METRICS_ROUTE string = "/metrics"
+)

@@ -114,7 +114,6 @@ func (flow *KisFlow) Run(ctx context.Context) error {
 		} else {
 			flow.inPut = inputData
 		}
-		// ========= 数据流 新增 ===========
 
 		if err := fn.Call(ctx, flow); err != nil {
 			// Error
@@ -252,5 +251,22 @@ func (flow *KisFlow) GetFuncConfigByName(fName string) *config.KisFuncConfig {
 func (flow *KisFlow) Next(acts ...kis.ActionFunc) error {
 	// 加载Function FaaS 传递的 Action动作
 	flow.action = kis.LoadActions(acts)
+	return nil
+}
+
+// Fork 得到Flow的一个副本(深拷贝)
+func (flow *KisFlow) Fork(ctx context.Context) kis.Flow {
+	config := flow.GetConfig()
+	newf := NewKisFlow(config)
+	for _, fp := range flow.Conf.Flows {
+		if _, ok := fp.Params[flow.Funcs[fp.FuncName].GetId()]; !ok {
+			newf.Link(flow.Funcs[fp.FuncName].GetConfig(), nil)
+		} else {
+			newf.Link(flow.Funcs[fp.FuncName].GetConfig(), fp.Params)
+		}
+	}
+
+	log.Logger().DebugFX(ctx, "=====>Flow Fork, oldFlow.funcParams = %+v\n", flow.funcParams)
+	log.Logger().DebugFX(ctx, "=====>Flow Fork, newFlow.funcParams = %+v\n", newf.GetFuncParamsAllFuncs())
 	return nil
 }
