@@ -64,4 +64,7 @@ const (
 // metrics
 const (
 	METRICS_ROUTE string = "/metrics"
+
+	COUNTER_KISFLOW_DATA_TOTAL_NAME string = "kisflow_data_total"
+	COUNTER_KISFLOW_DATA_TOTAL_HELP string = "KisFlow全部Flow的数据总量"
 )

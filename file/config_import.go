@@ -8,6 +8,7 @@ import (
 	"kis-flow/config"
 	"kis-flow/flow"
 	"kis-flow/kis"
+	"kis-flow/metrics"
 	"os"
 	"path"
 	"path/filepath"
@@ -96,6 +97,8 @@ func parseConfigWalkYaml(loadPath string) (*allConfig, error) {
 				return kisTypeFuncConfigure(all, confData, filePath, kisType)
 			case common.KisIdTypeConnnector:
 				return kisTypeConnConfigure(all, confData, filePath, kisType)
+			case common.KisIdTypeGlobal:
+				return kisTypeGlobalConfigure(confData, filePath, kisType)
 			default:
 				return errors.New(fmt.Sprintf("%s set wrong kistype %s", filePath, kisType))
 			}
@@ -151,5 +154,17 @@ func buildFlow(all *allConfig, fp config.KisFlowFunctionParam, newFlow kis.Flow,
 			return err
 		}
 	}
+	return nil
+}
+
+// kisTypeGlobalConfigure 解析Global配置文件，yaml格式
+func kisTypeGlobalConfigure(confData []byte, fileName string, kisType interface{}) error {
+	// 全局配置
+	if ok := yaml.Unmarshal(confData, config.GlobalConfig); ok != nil {
+		return errors.New(fmt.Sprintf("%s is wrong format kisType = %s", fileName, kisType))
+	}
+
+	metrics.RunMetrics()
+
 	return nil
 }
