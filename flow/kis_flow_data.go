@@ -37,9 +37,12 @@ func (flow *KisFlow) commitSrcData(ctx context.Context) error {
 	flow.buffer = flow.buffer[0:0]
 
 	// 首次提交数据源数据，进行统计数据总量
-	if config.GlobalConfig.EnableProm == true {
+	if config.GlobalConfig.EnableProm {
 		// 统计数据总量 Metrics.DataTota 指标累计加1
 		metrics.Metrics.DataTotal.Add(float64(dataCnt))
+
+		//统计当前Flow数量指标
+		metrics.Metrics.FlowDataTotal.WithLabelValues(flow.Name).Add(float64(dataCnt))
 	}
 
 	log.Logger().DebugFX(ctx, "====> After CommitSrcData, flow_name = %s, flow_id = %s\nAll Level Data =\n %+v\n", flow.Name, flow.Id, flow.data)
