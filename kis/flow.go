@@ -14,7 +14,7 @@ type Flow interface {
 	// Link 将Flow中的Function按照配置文件中的配置进行连接
 	Link(fConf *config.KisFuncConfig, fParam config.FParam) error
 
-	// CommitRow  ++++++ 提交Flow数据到即将执行的Function层 ++++
+	// CommitRow 提交Flow数据到即将执行的Function层
 	CommitRow(row interface{}) error
 
 	// Input 得到flow当前执行Function的输入源数据
